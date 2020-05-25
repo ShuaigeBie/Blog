@@ -1,0 +1,178 @@
+{{extend '../_layouts/home.html'}}
+
+{{block 'title'}}{{'多人博客 - 首页'}}{{/block}}
+{{block 'body'}}
+<section class="container">
+  {{include '../_partials/settings-nav.html'}}
+  <div class="col-md-5">
+    <form action="/settings/profile" method="post" id="edit_form">
+      <input type="hidden" name="id" value="{{ user._id }}">
+      <div class="form-group">
+        <label for="exampleInputEmail1" name='email'>账号</label>
+        <p class="form-control-static">{{user.email}}</p>
+      </div>
+      <div class="form-group">
+        <label for="exampleInputPassword1">昵称</label>
+        <p class="form-control-static">{{user.nickname}}</p>
+        <!-- <input type="text" name="nickname"  value="{{user.nickname}}">  -->
+      </div>
+      <div class="form-group">
+        <label for="exampleInputPassword1" >介绍</label>
+        <textarea class="form-control" rows="3" name='bio' >{{user.bio}}</textarea>
+      </div>
+      <div class="form-group">
+        <label for="exampleInputPassword1"  >性别</label>
+        <div>
+          <label class="radio-inline">
+            <input type="radio" name="gender" id="inlineRadio" value="0"> 男
+          </label>
+          <label class="radio-inline">
+            <input type="radio" name="gender" id="inlineRadio" value="1"> 女
+          </label>
+          <label class="radio-inline">
+            <input type="radio" name="gender" id="inlineRadio" value="-1"> 保密
+          </label>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="exampleInputPassword1">生日</label>
+        <input value="{{user.birthday}}" class="form-control" name='birthday' id="exampleInputPassword1" placeholder="">
+      </div>
+      <button type="submit" class="btn btn-success">保存</button>
+    </form>
+  </div>
+  <div class="col-md-2 profile-avatar">
+    <dl>
+      <dt>头像设置</dt>
+      <dd>
+        <img class="avatar" width="150" height="150" src="{{user.avatar}}" alt="">
+        <div>
+          <button class="btn btn-default" href="" id="head">更换头像</button>
+          <input type="file" id="setHead" style="display: none;">
+        </div>
+      </dd>
+    </dl>
+  </div>
+</section>
+{{/block}}
+
+{{block 'script'}}
+<script src="/node_modules/jquery/dist/jquery.js"></script>
+<script>
+$('#switch1').addClass('active')
+
+ var radios = document.querySelectorAll("#inlineRadio")
+  radios.forEach(function(item){
+    if(item.value == '{{user.gender}}'){
+      item.checked=true;
+    }
+ })
+
+ $('#edit_form').on('submit',function(e){
+   e.preventDefault();
+   var formData = $(this).serialize()
+   console.log(formData)
+   $.ajax({
+     url:'/settings/profile',
+     type:'post',
+     data:formData,
+     dataType:'json',
+    success:function(data){
+      console.log(data)
+          var err_code = data.err_code
+          if (err_code === 0) {
+            window.alert('更改成功')
+            // 服务端重定向针对异步请求无效
+            window.location.href = '/'
+          } else if (err_code === 500) {
+            window.alert('服务器忙，请稍后重试！')
+          }
+       
+        }
+   })
+ })
+
+ $('#head').on('click',function(){
+   $('#setHead').click()
+ })
+
+ $('#setHead').on('change',function(){
+
+  var avatar;
+   var file = document.getElementById('setHead').files[0]
+   
+   var reg = /^(\s|\S)+(jpg|png|JPG|PNG)+$/;
+
+
+   if(!reg.test(file.name)){
+            alert('文件类型错误,文件格式必须为:png/jpg/jpeg!')
+            return;
+   }
+  
+   
+  var reader = new FileReader()
+  reader.readAsDataURL(file);
+  console.log(file.size)
+  reader.onload = function(e){
+   
+
+    if(file.size>50000){
+      let image = new Image()     //新建一个img标签（不嵌入DOM节点，仅做canvas操作)
+        image.src = e.target.result    //让该标签加载base64格式的原图
+        image.onload = function() {    //图片加载完毕后再通过canvas压缩图片，否则图片还没加载完就压缩，结果图片是全黑的
+            let canvas = document.createElement('canvas'), //创建一个canvas元素
+            context = canvas.getContext('2d'),    //context相当于画笔，里面有各种可以进行绘图的API
+            imageWidth = image.width / 10,    //压缩后图片的宽度，这里设置为缩小一半
+            imageHeight = image.height / 10,    //压缩后图片的高度，这里设置为缩小一半
+            data = ''    //存储压缩后的图片
+            canvas.width = imageWidth    //设置绘图的宽度
+            canvas.height = imageHeight    //设置绘图的高度
+            
+            //使用drawImage重新设置img标签中的图片大小，实现压缩。drawImage方法的参数可以自行查阅W3C
+            context.drawImage(image, 0, 0, imageWidth, imageHeight)
+            
+            //使用toDataURL将canvas上的图片转换为base64格式
+            data = canvas.toDataURL('image/jpeg')
+            console.log(data)
+
+            avatar = {avatar:data}
+            console.log(avatar)
+
+            $.ajax({
+              url:'/avatar',
+              type:'post',
+              data:avatar,
+              dataType:'json',
+              success:function(data){
+                window.location.href = '/settings/profile'
+                console.log(data)
+              }
+            })
+        }
+    }else{
+      console.log("小图片")
+       avatar = {avatar:e.target.result}
+
+       $.ajax({
+      url:'/avatar',
+      type:'post',
+      data:avatar,
+      dataType:'json',
+      success:function(data){
+        window.location.href = '/settings/profile'
+        console.log(data)
+      }
+    })
+    }
+   
+  
+        
+  
+  }
+ 
+
+ })
+
+</script>
+{{/block}}
+

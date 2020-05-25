@@ -1,0 +1,105 @@
+{{extend '../_layouts/home.html'}}
+
+{{block 'title'}}{{'多人博客 - 首页'}}{{/block}}
+
+{{block 'head'}}
+<link rel="stylesheet" href="/public/css/markdown-github.css">
+<style>
+  .panel .panel-heading .action i {
+    margin-right: 10px;
+  }
+  .active{
+    color: red;
+  }
+</style>
+{{/block}}
+
+{{block 'body'}}
+<section class="container">
+  <div class="row">
+    <div class="col-md-9">
+      <article class="markdown-body">
+      <h1 id="_1"><a name="user-content-_1" href="#_1" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>{{publish.title}}</h1>
+      <blockquote>
+      </blockquote>
+      <pre>{{publish.content}}</pre>
+     </article>
+      
+        
+     {{each reply}}
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <span>{{$value.nickname}}</span> 评论时间 
+          <span>{{$value.create_date}}</span>
+          <span class="action">
+            <a href="#"><i class="switch glyphicon glyphicon-thumbs-up pull-right"></i></a>
+            <a href="/deleteReply?id={{publish.id}}&replyIndex={{publish.index}}&index={{$index}}"><i class="glyphicon glyphicon-remove-circle pull-right"></i></a>
+          </span>
+        </div>
+        
+        <div class="panel-body">
+         {{$value.content}}
+
+
+         
+        </div>
+      </div>
+      {{/each}}
+      <hr>
+      {{if user}}
+      <form id='reply'>
+        <div class="form-group">
+          <label for="exampleInputPassword1">添加回复</label>
+          <textarea class="form-control" id="" cols="10" rows="10" placeholder="请输入您要评论的内容" name='content'></textarea>
+          <input type="hidden" name="create_date" value='' id='date'>
+          <input type="hidden" name="nickname" value='{{user.nickname}}' >
+          <input type="hidden" name="id" value='{{publish.id}}' >
+          <input type="hidden" name="index" value='{{publish.index}}' >
+        </div>
+        <button type="submit" class="btn btn-success">回复</button>
+      </form>
+      {{else}}
+      <textarea class="form-control" id="" cols="10" rows="10" placeholder="请输入您要评论的内容" name='content'></textarea>
+      <a href="/login"><button type="submit" class="btn btn-success">请登录</button></a>
+
+      {{/if}}
+
+
+    </div>
+  </div>
+</section>
+{{/block}}
+
+{{block 'script'}}
+<script src="/node_modules/jquery/dist/jquery.js"></script>
+<script>
+// document.getElementById('date').value = Date.now()
+
+  $('#reply').on('submit',function(e){
+    var date = new Date()
+    document.getElementById('date').value = date.toLocaleString();
+   e.preventDefault();
+   var formData = $(this).serialize();
+          $.ajax({
+          url:'reply',
+          type:'post',
+          data:formData,
+          dataType:'json',
+          success:function(data){
+            window.location.reload()
+  
+          }
+        })
+      })
+  
+  $('.switch').on('click',function(e){
+    if($(this).hasClass('active')){
+      $(this).removeClass('active')
+    }else{
+      $(this).addClass('active')
+    }
+  })
+    
+        
+</script>
+{{/block}}

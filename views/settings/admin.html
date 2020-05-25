@@ -1,0 +1,86 @@
+{{extend '../_layouts/home.html'}}
+
+{{block 'title'}}{{'多人博客 - 首页'}}{{/block}}
+
+{{block 'body'}}
+<section class="container">
+  {{include '../_partials/settings-nav.html'}}
+  <div class="col-md-5">
+    <div class="subhead">
+      <h2>修改密码</h2>
+    </div>
+    <hr>
+    <form id="passwordEdit">
+      <div class="form-group">
+        <label for="exampleInputPassword1">当前密码</label>
+        <input type="password" class="form-control" id="exampleInputPassword" placeholder="" name='cueerntPas'>
+      </div>
+      <div class="form-group">
+        <label for="exampleInputPassword1">新的密码</label>
+        <input type="password" class="form-control" id="exampleInputPassword1" placeholder="" name='password'>
+      </div>
+      <div class="form-group">
+        <label for="exampleInputPassword1">确认密码</label>
+        <input type="password" class="form-control" id="exampleInputPassword2" placeholder="" name='ensurePas'>
+      </div>
+      <button type="submit" class="btn btn-success">保存</button>
+    </form>
+    <div class="subhead">
+      <h2>注销账号</h2>
+      <hr>
+    </div>
+    <div>
+      <p>一旦注销，不可找回，请谨慎操作</p>
+      <button class="btn btn-danger" id="deletebtn"><a href="/delete?id={{user._id}}" style="color: white;">删除</a></button>
+    </div>
+    <hr>
+  </div>
+</section>
+{{/block}}
+{{block 'script'}}
+<script src="/node_modules/jquery/dist/jquery.js"></script>
+<script>
+  $('#switch2').addClass('active')
+
+  $('#passwordEdit').on('submit',function(e){
+   e.preventDefault();
+   var formData = $(this).serialize()
+   if($('#exampleInputPassword1').val() == $('#exampleInputPassword2').val()){
+          $.ajax({
+          url:'/settings/admin',
+          type:'post',
+          data:formData,
+          dataType:'json',
+          success:function(data){
+            console.log(data)
+                var err_code = data.err_code
+                if (err_code === 0) {
+                  window.alert('更改成功')
+                  // 服务端重定向针对异步请求无效
+                  window.location.href = '/logout'
+                } else if (err_code === 500) {
+                  window.alert('服务端错误，请稍后在试试')
+                }else if( err_code===1){
+                  window.alert('当前密码输入有误,请重新输入')
+                }
+            
+              }
+        })
+   }else{
+     return window.alert('您输入的密码不一致')
+   }
+   
+ })
+
+  // $('#deletebtn').on('click',function(){
+  //   $.ajax({
+  //     url:'/delete',
+  //     type:'get',
+  //     success:function(data){
+  //       console.log(data)
+  //     }
+  //   })
+  // })
+
+</script>
+{{/block}}

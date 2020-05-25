@@ -1,0 +1,33 @@
+{{extend '../_layouts/home.html'}}
+{{block 'title'}}{{'多人博客 - 首页'}}{{/block}}
+
+{{block 'body'}}
+<h2 class="container">为您查询到以下结果</h1>
+    <br>
+    <br>
+    
+{{each searchResult}}
+<section class="container">
+    
+  <ul class="media-list">
+    <li class="media">
+      <div class="media-left">
+      </div>
+      <div class="media-body">
+          
+        <h4 class="media-heading" style="width: 800px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><a href="/showContent?id={{$value._id}}&index={{$value.comments.index}}">{{$value.comments.title}}</a></h4>       
+        <p>发表者:{{$value.nickname}}</p>
+        <hr>
+        
+      </div>
+
+     
+
+    </li>
+  </ul>
+</section>
+{{/each}}
+ 
+ 
+
+{{/block}}
